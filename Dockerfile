@@ -13,13 +13,11 @@ WORKDIR /repo
 # Copy the entire repository
 COPY . .
 
-# Install dependencies.
-# The repository currently does not contain pnpm-lock.yaml.
+# Install dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Build the production Docker-edition server bundle directly
-# Skip the root TypeScript build by targeting the specific package
-RUN pnpm -r run build:docker-edition
+# Build the api-server package (using the standard 'build' script)
+RUN pnpm --filter @workspace/api-server run build
 
 
 # ---- Runtime stage ----
