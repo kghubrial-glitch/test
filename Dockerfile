@@ -1,38 +1,31 @@
 # ============================================================================
 # Nulls Report — Docker edition
-#
-# Build (from the repository root):
-#   docker build -f editions/docker/Dockerfile -t nulls-report .
-#
-# Run:
-#   docker run -p 8080:8080 --env-file .env nulls-report
-#
-# The final image contains exactly two things: `server.js` (the whole
-# application bundled into a single file — API, auth, routes, everything)
-# and `dist/` (the prebuilt web app). The container runs ONE process:
-#
-#   CMD ["node", "server.js"]
-#
-# All configuration comes from environment variables (DATABASE_URL,
-# SESSION_SECRET, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, PORT, …). Nothing
-# is baked in, so the same image works in dev, staging, and production.
 # ============================================================================
 
-# ---- Build stage: install deps, build the web app, bundle server.js ----
+# ---- Build stage ----
 FROM node:22-alpine AS build
 
-# pnpm is required by this repo (the preinstall script enforces it).
+# pnpm is required by this repo
 RUN corepack enable
 
 WORKDIR /repo
 
+# Copy the entire repository
 COPY . .
 
+# Install dependencies.
+# The repository currently does not contain pnpm-lock.yaml.
 RUN pnpm install --no-frozen-lockfile
-RUN pnpm run build
+
+# Build workspace packages without running the root
+# TypeScript build that requires /repo/tsconfig.json.
+RUN pnpm -r --if-present run build
+
+# Build the production Docker-edition server bundle.
 RUN pnpm --filter @workspace/api-server run build:docker-edition
 
-# ---- Runtime stage: node + server.js + dist, nothing else ----
+
+# ---- Runtime stage ----
 FROM node:22-alpine
 
 ENV NODE_ENV=production
@@ -40,8 +33,13 @@ ENV PORT=8080
 
 WORKDIR /app
 
+# Docker-edition package metadata
 COPY --from=build /repo/editions/docker/package.json /app/package.json
+
+# Bundled production server
 COPY --from=build /repo/editions/docker/server.js /app/server.js
+
+# Built frontend
 COPY --from=build /repo/artifacts/nulls-report/dist/public /app/dist
 
 EXPOSE 8080
