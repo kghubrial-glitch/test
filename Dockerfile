@@ -16,9 +16,16 @@ COPY . .
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Build the api-server package (using the standard 'build' script)
-RUN pnpm --filter @workspace/api-server run build
+# DEBUG: List all workspace packages and their scripts
+RUN echo "=== Available workspace packages ===" && \
+    pnpm list --depth -1 --json || true && \
+    echo "=====================================" && \
+    echo "=== Available scripts ===" && \
+    pnpm -r run --if-present | grep -E "^\s+(build|compile|dist|docker)" || true && \
+    echo "=========================="
 
+# Build ALL workspace packages (this will run the 'build' script in each)
+RUN pnpm -r run build
 
 # ---- Runtime stage ----
 FROM node:22-alpine
