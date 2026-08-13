@@ -19,7 +19,7 @@ RUN pnpm install --no-frozen-lockfile
 
 # Build the production Docker-edition server bundle directly
 # Skip the root TypeScript build by targeting the specific package
-RUN pnpm --filter @workspace/api-server run build:docker-edition
+RUN pnpm -r run build:docker-edition
 
 
 # ---- Runtime stage ----
