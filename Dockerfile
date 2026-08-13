@@ -28,7 +28,7 @@ WORKDIR /repo
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm run build
 RUN pnpm --filter @workspace/api-server run build:docker-edition
 
