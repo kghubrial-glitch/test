@@ -19,7 +19,7 @@
 # ============================================================================
 
 # ---- Build stage: install deps, build the web app, bundle server.js ----
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 # pnpm is required by this repo (the preinstall script enforces it).
 RUN corepack enable
@@ -33,7 +33,7 @@ RUN pnpm run build
 RUN pnpm --filter @workspace/api-server run build:docker-edition
 
 # ---- Runtime stage: node + server.js + dist, nothing else ----
-FROM node:20-alpine
+FROM node:22-alpine
 
 ENV NODE_ENV=production
 ENV PORT=8080
