@@ -6,6 +6,6 @@
   "type": "module",
   "main": "server.js",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22.11"
   }
 }
